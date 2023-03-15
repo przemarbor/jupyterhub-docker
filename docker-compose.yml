@@ -1,42 +1,69 @@
+# Wersja Docker Compose
 version: '3'
 
+# Uslugi
 services:
-  jupyterhub:
-    build: jupyterhub
-    image: jupyterhub_img
-    container_name: jupyterhub
+  # Reverse-proxy
+  reverse-proxy:
+    # Obraz TRAEFIK wersja: 2.9
+    image: traefik:v2.9
+    # Nazwa kontenera
+    container_name: reverse-proxy
+    # Uruchomienie interfejsu UI oraz wykrywanie
+    command: --api.insecure=true --providers.docker
+    
+    # Porty
+    ports:
+      # Port HTTP
+      - "80:80"
+      # Interfejs WEBowy TRAEFIKa (uruchamiany przez --api.insecure=true)
+      - "8080:8080"
+    
+    # Wolumeny
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - jupyterhub_data:/srv/jupyterhub
-    environment:
-      - DOCKER_JUPYTER_CONTAINER=jupyterlab_img
-      - DOCKER_NETWORK_NAME=${COMPOSE_PROJECT_NAME}_default
-      - HUB_IP=jupyterhub
-      - HOST
-    labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=Host:${HOST}"
-    restart: on-failure
+      # Umozliwia Traefikowi nadzorownie instancji dockera
+      - "/var/run/docker.sock:/var/run/docker.sock"
 
+  # Jupyter Hub
+  hub:
+    # Przekierowanie do Dockerfile Jupyter Hub
+    build: jupyterhub
+    # Nazwa kontenera
+    container_name: jupyterhub
+    
+    # Wolumeny
+    volumes:
+    - "/var/run/docker.sock:/var/run/docker.sock"
+    - "jupyterhub-data:/data"
+    - "./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py"
+    
+    # Zmienne środowiskowe
+    environment:
+      # Nazwa uzytkownika z uprawnieniami administratora
+      - JUPYTERHUB_ADMIN=admin
+      # Nazwa obrazu notatnika Jupyter
+      - DOCKER_NOTEBOOK_IMAGE=jupyterlab_img
+      # Sciezka do plikow w notatniku
+      - DOCKER_NOTEBOOK_DIR=/home/prz
+      # Komenda uruchamiajaca notatnik
+      - DOCKER_SPAWN_CMD=start-singleuser.sh
+      # Nazwa sieci w ktorej beda uruchamiane kontenery
+      - DOCKER_NETWORK_NAME=${COMPOSE_PROJECT_NAME}_default
+
+    # Uruchmienie pliku konfiguracyjnego Jupyter Hub
+    command: >
+      jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
+   
+    # Etykiety kontenera
+    labels:
+      # Przekierowanie przez Traefik do kontenera, korzystajac z hosta: localhost (HTTP!)
+      - "traefik.http.routers.jupyterhub.rule=Host(`localhost`)"
+
+  # Notatnik Jupyter Lab
   jupyterlab:
     build: jupyterlab
-    image: jupyterlab_img
-    container_name: jupyterlab-throaway
+    container_name: jupyter-notebook
     network_mode: none
     command: echo
-
-  reverse-proxy:
-    image: traefik
-    container_name: reverse-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
-    volumes:
-      - ./reverse-proxy/traefik.toml:/etc/traefik/traefik.toml
-      - /etc/certs:/etc/certs
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: on-failure
-
 volumes:
-  jupyterhub_data:
+  jupyterhub-data:

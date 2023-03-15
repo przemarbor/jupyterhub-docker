@@ -1,9 +1,6 @@
-FROM jupyterhub/jupyterhub:0.9.3
+# Pobieramy oficjalny obraz Jupyter Hub w wersji 3
+FROM jupyterhub/jupyterhub:3
 
-COPY jupyterhub_config.py .
-
-RUN wget https://raw.githubusercontent.com/jupyterhub/jupyterhub/0.9.3/examples/cull-idle/cull_idle_servers.py
-
+# Pobieramy i instalujemy Dockersprawner
 RUN pip install \
-    dockerspawner==0.10.0 \
-    jhub_cas_authenticator==1.0.0
+    dockerspawner==12.1.0

@@ -1,65 +1,60 @@
-# JupyterHub deployment in use at Université de Versailles
+# JupyterHub on Docker
+This is updated version of ["*JupyterHub deployment in use at Université de Versailles*"](https://github.com/defeo/jupyterhub-docker).
 
-This is a [JupyterHub](https://jupyter.org/hub) deployment based on
-Docker currently in use at [Université de
-Versailles](https://jupyter.ens.uvsq.fr/).
+## Run
+> docker-compose build
+> 
+> docker-compose run
 
-## Features
 
-- Containerized single user Jupyter servers, using
-  [DockerSpawner](https://github.com/jupyterhub/dockerspawner);
-- Central authentication to the University CAS server;
-- User data persistence;
-- HTTPS proxy.
+## Todo
+### Docker-compose
+- [ ] Recreate docker-compose.yml
+### JupyterHub
+- [ ] Prepare for CAS authentication
+- [ ] Prepare jupyterhub_config.py
+### Traefik
+- [ ] Prepare traefik.toml
+- [ ] Add HTTPS
+- [ ] Configure redirect
+- [ ] Prepare certificates
+### Jupyterlab
+- [ ] Repair issuficient permissions while creating new notebook
 
-## Learn more
-
-This deployment is described in depth in [this blog
-post](https://opendreamkit.org/2018/10/17/jupyterhub-docker/).
-
-### Adapt to your needs
-
-This deployment is ready to clone and roll on your own server. Read
-the [blog
-post](https://opendreamkit.org/2018/10/17/jupyterhub-docker/) first,
-to be sure you understand the configuration.
-
-Then, if you like, clone this repository and apply (at least) the
-following changes:
-
-- In [`.env`](.env), set the variable `HOST` to the name of the server you
-  intend to host your deployment on.
-- In [`reverse-proxy/traefik.toml`](reverse-proxy/traefik.toml), edit
-  the paths in `certFile` and `keyFile` and point them to your own TLS
-  certificates. Possibly edit the `volumes` section in the
-  `reverse-proyx` service in
-  [`docker-compose.yml`](docker-compose.yml).
-- In
-  [`jupyterhub/jupyterhub_config.py`](jupyterhub/jupyterhub_config.py),
-  edit the *"Authenticator"* section according to your institution
-  authentication server.  If in doubt, [read
-  here](https://jupyterhub.readthedocs.io/en/stable/getting-started/authenticators-users-basics.html).
-
-Other changes you may like to make:
-
-- Edit [`jupyterlab/Dockerfile`](jupyterlab/Dockerfile) to include the
-  software you like. Do not forget to change
-  [`jupyterhub/jupyterhub_config.py`](jupyterhub/jupyterhub_config.py)
-  accordingly, in particular the *"user data persistence"* section.
-
-### Run!
-
-Once you are ready, build and launch the application with
-
+## Repository structure
 ```
-docker-compose build
-docker-compose up -d
+JupyterHub
+├── README.md
+├── docker-compose.yml
+├── jupyterhub
+│   ├── Dockerfile
+│   └── jupyterhub_config.py
+├── jupyterlab
+│   └── Dockerfile
+└── traefik
+    └── traefik.toml
 ```
 
-Read the [Docker Compose manual](https://docs.docker.com/compose/) to
-learn how to manage your application.
 
-## Acknowledgements
+### 1. Traefik - Reverse proxy
+Version: traefik:v2.9 (Docker-compose)
 
-<img src="https://opendreamkit.org/public/logos/Flag_of_Europe.svg" height="20"> Work partially funded by the EU H2020 project
-[OpenDreamKit](https://opendreamkit.org/).
+[Traefik documentation](https://doc.traefik.io/traefik/)
+
+### 2. JupyterHub
+Version: jupyterhub/jupyterhub:3 (JupyterHub Dockerfile)
+
+https://github.com/jupyterhub/jupyterhub-deploy-docker/blob/master/jupyterhub_config.py
+
+#### 2.1 DockerSpawner
+Version: dockerspawner==12.1.0 (pip install in JupyterHub Dockerfile)
+
+https://jupyterhub-dockerspawner.readthedocs.io/en/latest/install.html
+
+### 3. Jupyterlab - Jupyter notebook
+Version: jupyter/scipy-notebook:hub-3.1.1 (Jupyterlab Dockerfile)
+
+https://hub.docker.com/r/jupyter/scipy-notebook/tags
+
+
+
