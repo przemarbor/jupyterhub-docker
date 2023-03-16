@@ -1,26 +1,20 @@
-# Copyright (c) Jupyter Development Team.
-# Distributed under the terms of the Modified BSD License.
-
 # Configuration file for JupyterHub
+# Date: 15.03.2023 DMY
+
+# JupyterHub version: 3.1.1
+# Dockerspawner version: 12.1.0
+# JupyterHub CAS Authenticator version: 1.0.2
+
 import os
+import sys
 
-c = get_config()  # noqa: F821
+c = get_config()
 
-# We rely on environment variables to configure JupyterHub so that we
-# avoid having to rebuild the JupyterHub container every time we change a
-# configuration parameter.
-
-# Spawn single-user servers as Docker containers
+# ----------------------------------------
+# Dockerspawner
 c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
-
-# Spawn containers from this image
 c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
 
-# JupyterHub requires a single-user instance of the Notebook server, so we
-# default to using the `start-singleuser.sh` script included in the
-# jupyter/docker-stacks *-notebook images as the Docker run command when
-# spawning containers.  Optionally, you can override the Docker run command
-# using the DOCKER_SPAWN_CMD environment variable.
 spawn_cmd = os.environ.get("DOCKER_SPAWN_CMD", "start-singleuser.sh")
 c.DockerSpawner.cmd = spawn_cmd
 
@@ -29,16 +23,13 @@ network_name = os.environ["DOCKER_NETWORK_NAME"]
 c.DockerSpawner.use_internal_ip = True
 c.DockerSpawner.network_name = network_name
 
-# Explicitly set notebook directory because we'll be mounting a volume to it.
-# Most jupyter/docker-stacks *-notebook images run the Notebook server as
-# user `jovyan`, and set the notebook directory to `/home/jovyan/work`.
-# We follow the same convention.
+# Notebook directory
 notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR") or "/home/jovyan"
 c.DockerSpawner.notebook_dir = notebook_dir
 
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
-c.DockerSpawner.volumes = {"jupyterhub-user-{username}": notebook_dir}
+c.DockerSpawner.volumes = {"hub-{username}": notebook_dir}
 
 # Remove containers once they are stopped
 c.DockerSpawner.remove = True
@@ -53,9 +44,73 @@ c.JupyterHub.hub_port = 9090
 # Persist hub data on volume mounted inside container
 c.JupyterHub.cookie_secret_file = "/data/jupyterhub_cookie_secret"
 c.JupyterHub.db_url = "sqlite:////data/jupyterhub.sqlite"
+# ----------------------------------------
 
 
-# Allowed admins
-admin = os.environ.get("JUPYTERHUB_ADMIN")
-if admin:
-    c.Authenticator.admin_users = [admin]
+
+# Administrator users
+c.Authenticator.admin_users = {"admin"}
+
+
+## Dummy Authenticator for testing only !!!
+c.JupyterHub.authenticator_class = "dummy"
+
+## ----------------------------------------
+## JupyterHub Cas Authenticator
+# adapted config from GitHub cwaldbieser/jhub_cas_authenticator
+
+#c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
+
+# The CAS URL to redirect unauthenticated users to.
+#c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
+#c.CASLocalAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
+
+
+# The service URL the CAS server will redirect the browser back to on successful authentication.
+# If not set, this is set to the same URL the request comes in on.  This will work fine for
+# simple deployments, but deployments behind a proxy or load banalncer will likely need to
+# be adjusted so the CAS service redirects back to the *real* login URL for your Jupyterhub.
+#c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
+
+# Path to CA certificates the CAS client will trust when validating a service ticket.
+#c.CASAuthenticator.cas_client_ca_certs = '/path/to/ca_certs.pem'
+
+# The CAS endpoint for validating service tickets.
+#c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas-server/serviceValidate'
+
+# A set of attribute name and value tuples a user must have to be allowed access.
+#c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
+## ----------------------------------------
+
+
+## ----------------------------------------
+# JupyterHub Idle Culler
+# adapted config from GitHub jupyterhub/jupyterhub-idle-culler
+
+c.JupyterHub.load_roles = [
+    {
+        "name": "jupyterhub-idle-culler-role",
+        "scopes": [
+            "list:users",
+            "read:users:activity",
+            "read:servers",
+            "delete:servers",
+            # "admin:users", # if using --cull-users
+        ],
+        # assignment of role's permissions to:
+        "services": ["jupyterhub-idle-culler-service"],
+    }
+]
+
+c.JupyterHub.services = [
+    {
+        "name": "jupyterhub-idle-culler-service",
+        "command": [
+            sys.executable,
+            "-m", "jupyterhub_idle_culler",
+            "--timeout=120",
+        ],
+    }
+]
+
+## ----------------------------------------
