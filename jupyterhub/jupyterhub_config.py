@@ -35,7 +35,7 @@ c.DockerSpawner.volumes = {"hub-{username}": notebook_dir}
 c.DockerSpawner.remove = True
 
 # For debugging arguments passed to spawned containers
-c.DockerSpawner.debug = True
+c.DockerSpawner.debug = False
 
 # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_ip = "jupyterhub"
@@ -108,7 +108,7 @@ c.JupyterHub.services = [
         "command": [
             sys.executable,
             "-m", "jupyterhub_idle_culler",
-            "--timeout=120",
+            "--timeout={0}".format(os.environ.get("JUPYTERHUB_IDLE_CULLER_TIMEOUT", "3600")),
         ],
     }
 ]

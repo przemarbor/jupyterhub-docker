@@ -32,12 +32,13 @@ services:
       - DOCKER_NOTEBOOK_IMAGE=jupyterlab_img
       # Docker network name
       - DOCKER_NETWORK_NAME=${COMPOSE_PROJECT_NAME}_default
-      - HOST=localhost
+      - HOST=${HOST}
+      - JUPYTERHUB_IDLE_CULLER_TIMEOUT=360 #in seconds
     # Run Jupyterhub config file
     command: >
       jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
     labels:
-      - "traefik.http.routers.jupyterhub.rule=Host(`localhost`)"
+      - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
 
   # Notatnik Jupyter Lab
   jupyterlab:
