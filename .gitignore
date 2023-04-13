@@ -1,2 +1,4 @@
 .*
 *~
+traefik/localhost-key.pem
+traefik/localhost.pem

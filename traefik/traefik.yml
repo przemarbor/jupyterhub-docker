@@ -14,5 +14,7 @@ api:
   insecure: true
 
 providers:
+  file:
+    filename: /etc/traefik/tls.yml
   docker:
     endpoint: "unix:///var/run/docker.sock"

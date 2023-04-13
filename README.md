@@ -45,6 +45,7 @@ JupyterHub
 Version: traefik:v2.9 (Docker-compose)
 
 [Traefik documentation](https://doc.traefik.io/traefik/)
+[Traefik config Entry Poionts](https://doc.traefik.io/traefik/routing/entrypoints/)
 
 ### 2. JupyterHub
 Version: jupyterhub/jupyterhub:3.1.1 (JupyterHub Dockerfile, config in jupyterhub_config.py)

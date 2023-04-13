@@ -22,6 +22,9 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       # Traefik config file
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/tls.yml:/etc/traefik/tls.yml
+      - ./traefik/localhost-key.pem:/etc/certs/localhost-key.pem
+      - ./traefik/localhost.pem:/etc/certs/localhost.pem
 
 
   jupyterhub:
