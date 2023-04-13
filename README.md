@@ -13,13 +13,17 @@ This is updated version of ["*JupyterHub deployment in use at Université de Ver
 ### JupyterHub
 - [x] Prepare for CAS authentication
 - [x] Prepare jupyterhub_config.py
+- [ ] Fix not using allowed_users
 ### Traefik
-- [ ] Prepare traefik.toml
-- [ ] Add HTTPS
-- [ ] Configure redirect
-- [ ] Prepare certificates
+- [x] Prepare traefik.toml
+- [x] Add HTTPS
+- [x] Configure redirect
+- [x] Prepare certificates
 ### Jupyterlab
 - [x] Repair issuficient permissions while creating new notebook
+- [ ] Change user name in container (!whoami)
+- [ ] Add custom logo
+- [ ] Add python packages
 
 ## Repository structure
 ```
@@ -71,3 +75,10 @@ Version: 1.2.1 (pip install in JupyterHub Dockerfile, config in jupyterhub_confi
 
 [JupyterHub Idle Culler Service](https://github.com/jupyterhub/jupyterhub-idle-culler)
 
+
+### 6. JupyterHub Traefik Proxy
+Version: 0.3.0
+
+[Installation](https://jupyterhub-traefik-proxy.readthedocs.io/en/latest/install.html)
+[JupyterHub Traefik Proxy PyPI](https://pypi.org/project/jupyterhub-traefik-proxy/)
+[JupyterHub Traefik Proxy](https://github.com/jupyterhub/traefik-proxy)

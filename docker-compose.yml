@@ -1,5 +1,4 @@
 # Docker-compose file
-# Date: 15.03.2023 DMY
 
 # Docker-compose version
 version: '3.9'
@@ -13,12 +12,17 @@ services:
     command: --api.insecure=true --providers.docker
     ports:
       # HTTP
-      - "80:80"
+      #- "80:80"
       # Traefik UI (run by --api.insecure=true)
       - "8080:8080"
+      # HTTPS
+      - "443:443"
     volumes:
       # Allow Traefik to detect docker containers
       - "/var/run/docker.sock:/var/run/docker.sock"
+      # Traefik config file
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+
 
   jupyterhub:
     build: jupyterhub
@@ -39,8 +43,8 @@ services:
       jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
     labels:
       - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
+      - "traefik.http.routers.jupyterhub.tls=true"
 
-  # Notatnik Jupyter Lab
   jupyterlab:
     build: jupyterlab
     image: jupyterlab_img

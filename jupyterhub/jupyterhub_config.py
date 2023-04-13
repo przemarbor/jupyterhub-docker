@@ -24,7 +24,7 @@ c.DockerSpawner.use_internal_ip = True
 c.DockerSpawner.network_name = network_name
 
 # Notebook directory
-notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR") or "/home/jovyan"
+notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR") or "/home/student"
 c.DockerSpawner.notebook_dir = notebook_dir
 
 # Mount the real user's Docker volume on the host to the notebook user's
@@ -35,7 +35,7 @@ c.DockerSpawner.volumes = {"hub-{username}": notebook_dir}
 c.DockerSpawner.remove = True
 
 # For debugging arguments passed to spawned containers
-c.DockerSpawner.debug = False
+c.DockerSpawner.debug = True
 
 # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_ip = "jupyterhub"
