@@ -24,6 +24,11 @@ This is updated version of ["*JupyterHub deployment in use at Université de Ver
 - [ ] Change user name in container (!whoami)
 - [ ] Add custom logo
 - [ ] Add python packages
+- [ ] Remove notifications
+- [ ] Remove widgets
+- [x] Add Julia kernel
+- [x] Add R kernel
+- [ ] Add c++ kernel
 
 ## Repository structure
 ```
@@ -37,6 +42,9 @@ JupyterHub
 ├── jupyterlab
 │   └── Dockerfile
 └── traefik
+    ├── tls.yml
+    ├── localhost-key.pem
+    ├── localhost.pem
     └── traefik.toml
 ```
 
@@ -46,6 +54,8 @@ Version: traefik:v2.9 (Docker-compose)
 
 [Traefik documentation](https://doc.traefik.io/traefik/)
 [Traefik config Entry Poionts](https://doc.traefik.io/traefik/routing/entrypoints/)
+
+The TLS configuration shuld be in separate file (tls.yml) and mounted to traefik container, in config file (traefik.yml) it is included in providers section.
 
 ### 2. JupyterHub
 Version: jupyterhub/jupyterhub:3.1.1 (JupyterHub Dockerfile, config in jupyterhub_config.py)
@@ -62,7 +72,7 @@ Version: jupyter/scipy-notebook:hub-3.1.1 (Jupyterlab Dockerfile)
 
 [Building Docker image for Jupyter Notebook](https://jupyterhub-dockerspawner.readthedocs.io/en/latest/docker-image.html)
 
-[Scipy-notebook](https://hub.docker.com/r/jupyter/scipy-notebook/tags)
+[Datascience-notebook](https://hub.docker.com/r/jupyter/datascience-notebook/tags/)
 
 
 ### 4. Jhubauthenticators - CAS authentication
