@@ -10,6 +10,36 @@ import sys
 
 c = get_config()
 
+
+# Maximum number of concurrent servers that can be active at a time
+c.JupyterHub.active_server_limit = 100
+
+# Resolution (in seconds) for updating activity
+c.JupyterHub.activity_resolution = 300
+
+# The base URL of the entire application
+c.JupyterHub.base_url = "/"
+
+# If person can have more than one server, then he can change the name of the server
+c.JupyterHub.allow_named_servers = True
+
+# Configure more than one server for admins
+def named_server_limit_per_user_fn(handler):
+    user = handler.current_user
+    if user and user.admin:
+        return 5
+    return 1
+
+c.JupyterHub.named_server_limit_per_user = named_server_limit_per_user_fn
+
+c.DockerSpawner.mem_limit = "2G"
+
+c.DockerSpawner.cpu_limit = 2
+
+
+
+
+
 # ----------------------------------------
 # Dockerspawner
 c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
@@ -29,7 +59,7 @@ c.DockerSpawner.notebook_dir = notebook_dir
 
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
-c.DockerSpawner.volumes = {"hub-{username}": notebook_dir}
+c.DockerSpawner.volumes = {"/Users/jakub/Repos/jupyterhub-docker/data" + "/hub-{username}": notebook_dir}
 
 # Remove containers once they are stopped
 c.DockerSpawner.remove = True
@@ -71,6 +101,7 @@ c.JupyterHub.authenticator_class = "dummy"
 # simple deployments, but deployments behind a proxy or load banalncer will likely need to
 # be adjusted so the CAS service redirects back to the *real* login URL for your Jupyterhub.
 #c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
+#c.CASAuthenticator.cas_service_url = 'https://test1234.prz.edu.pl'
 
 # Path to CA certificates the CAS client will trust when validating a service ticket.
 #c.CASAuthenticator.cas_client_ca_certs = '/path/to/ca_certs.pem'
