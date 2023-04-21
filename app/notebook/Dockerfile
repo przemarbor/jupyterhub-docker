@@ -7,5 +7,5 @@ FROM jupyter/datascience-notebook:hub-3.1.1
 ARG JUPYTERHUB_VERSION=3.1.1
 
 # Install packages
-#RUN pip3 install --no-cache \
-#    jupyterhub==$JUPYTERHUB_VERSION
+RUN pip3 install --no-cache \
+    jupyterlab-language-pack-pl-PL

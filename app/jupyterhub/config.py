@@ -1,5 +1,4 @@
 # Configuration file for JupyterHub
-# Date: 15.03.2023 DMY
 
 # JupyterHub version: 3.1.1
 # Dockerspawner version: 12.1.0
@@ -12,10 +11,10 @@ c = get_config()
 
 
 # Maximum number of concurrent servers that can be active at a time
-c.JupyterHub.active_server_limit = 100
+c.JupyterHub.active_server_limit = int(os.environ["ACTIVE_SERVER_LIMIT"]) or 100
 
 # Resolution (in seconds) for updating activity
-c.JupyterHub.activity_resolution = 300
+c.JupyterHub.activity_resolution = int(os.environ["ACTIVITY_RESOLUTION"]) or 300
 
 # The base URL of the entire application
 c.JupyterHub.base_url = "/"
@@ -32,17 +31,37 @@ def named_server_limit_per_user_fn(handler):
 
 c.JupyterHub.named_server_limit_per_user = named_server_limit_per_user_fn
 
-c.DockerSpawner.mem_limit = "2G"
+c.DockerSpawner.mem_limit = os.environ["MEM_LIMIT"] or "2G"
 
-c.DockerSpawner.cpu_limit = 2
-
-
-
+c.DockerSpawner.cpu_limit = int(os.environ["CPU_LIMIT"]) or 2
 
 
 # ----------------------------------------
 # Dockerspawner
-c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
+from dockerspawner import DockerSpawner
+
+appdata_dir = os.environ["APPDATA_DIR"] or ""
+
+class MyDockerSpawner(DockerSpawner):
+    def start(self):
+        userName = self.user.name
+        if "@prz.edu.pl" in userName:
+            self.volumes = {appdata_dir + '/teachers/{}'.format(userName): '/home/jovyan',
+                            appdata_dir + '/shared': {'bind': '/home/jovyan/shared', 'mode': 'rw'}}
+        elif "@stud.prz.edu.pl" in userName:
+            self.volumes = {appdata_dir + '/students/{}'.format(userName): '/home/jovyan',
+                            appdata_dir + '/shared': {'bind': '/home/jovyan/shared', 'mode': 'ro'}}
+        else:
+            self.volumes = {appdata_dir + '/others/{}'.format(userName): '/home/jovyan',
+                            appdata_dir + '/shared': {'bind': '/home/jovyan/shared', 'mode': 'ro'}}
+        return super().start()
+
+c.JupyterHub.spawner_class = MyDockerSpawner
+
+
+
+#c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
+
 c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
 
 spawn_cmd = os.environ.get("DOCKER_SPAWN_CMD", "start-singleuser.sh")
@@ -59,7 +78,9 @@ c.DockerSpawner.notebook_dir = notebook_dir
 
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
-c.DockerSpawner.volumes = {"/Users/jakub/Repos/jupyterhub-docker/data" + "/hub-{username}": notebook_dir}
+
+
+#c.DockerSpawner.volumes = {userData_dir + "hub-{username}": notebook_dir}
 
 # Remove containers once they are stopped
 c.DockerSpawner.remove = True
@@ -75,7 +96,6 @@ c.JupyterHub.hub_port = 9090
 c.JupyterHub.cookie_secret_file = "/data/jupyterhub_cookie_secret"
 c.JupyterHub.db_url = "sqlite:////data/jupyterhub.sqlite"
 # ----------------------------------------
-
 
 
 # Administrator users

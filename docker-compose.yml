@@ -1,58 +1,45 @@
-# Docker-compose file
-
 # Docker-compose version
 version: '3.9'
 
 services:
-  reverse-proxy:
-    # Treaefik version: 2.9
-    image: traefik:v2.9
-    container_name: reverse-proxy
-    # Run UI interface and turn on docker detection
-    command: --api.insecure=true --providers.docker
+  proxy:
+    build: ./app/proxy
+    container_name: proxy
     ports:
-      # HTTP
-      #- "80:80"
-      # Traefik UI (run by --api.insecure=true)
-      - "8080:8080"
-      # HTTPS
       - "443:443"
     volumes:
-      # Allow Traefik to detect docker containers
       - "/var/run/docker.sock:/var/run/docker.sock"
-      # Traefik config file
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
-      - ./traefik/tls.yml:/etc/traefik/tls.yml
-      - ./traefik/localhost-key.pem:/etc/certs/localhost-key.pem
-      - ./traefik/localhost.pem:/etc/certs/localhost.pem
-
+      - ./app/proxy/traefik.yml:/etc/traefik/traefik.yml
+      - ./app/proxy/tls.yml:/etc/traefik/tls.yml
+      - ./app/proxy/certs/:/etc/certs/
 
   jupyterhub:
-    build: jupyterhub
+    build: ./app/jupyterhub
     container_name: jupyterhub
     volumes:
     - "/var/run/docker.sock:/var/run/docker.sock:rw"
     - "jupyterhub-data:/data"
-    - "./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
+    - "./app/jupyterhub/config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
     environment:
-      # Jupyterlab container image
-      - DOCKER_NOTEBOOK_IMAGE=jupyterlab_img
-      # Docker network name
+      - ACTIVE_SERVER_LIMIT=${ACTIVE_SERVER_LIMIT}
+      - ACTIVITY_RESOLUTION=${ACTIVITY_RESOLUTION}
+      - MEM_LIMIT=${MEM_LIMIT}
+      - CPU_LIMIT=${CPU_LIMIT}
+      - APPDATA_DIR=${APPDATA_DIR}
+      - DOCKER_NOTEBOOK_IMAGE=notebook_img
       - DOCKER_NETWORK_NAME=${COMPOSE_PROJECT_NAME}_default
       - HOST=${HOST}
-      - JUPYTERHUB_IDLE_CULLER_TIMEOUT=360 #in seconds
-    # Run Jupyterhub config file
-    command: >
-      jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
+      - JUPYTERHUB_IDLE_CULLER_TIMEOUT=${IDLE_CULLER_TIMEOUT}
     labels:
       - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
       - "traefik.http.routers.jupyterhub.tls=true"
 
-  jupyterlab:
-    build: jupyterlab
-    image: jupyterlab_img
-    container_name: jupyterlab-throaway
+  notebook:
+    build: ./app/notebook
+    image: notebook_img
+    container_name: notebook-throwaway
     network_mode: none
     command: echo
+
 volumes:
   jupyterhub-data:

@@ -1,4 +1,2 @@
-.*
-*~
-traefik/localhost-key.pem
-traefik/localhost.pem
+appdata/
+app/proxy/certs/

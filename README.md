@@ -3,17 +3,21 @@ This is updated version of ["*JupyterHub deployment in use at Université de Ver
 
 ## Run
 > docker-compose build
-> 
+
 > docker-compose run
 
 
 ## Todo
+- [ ] Prepare environment variable file
 ### Docker-compose
 - [x] Recreate docker-compose.yml
 ### JupyterHub
 - [x] Prepare for CAS authentication
 - [x] Prepare jupyterhub_config.py
 - [ ] Fix not using allowed_users
+- [ ] Reapir CAS authentication
+- [x] Change directory of user data
+- [ ] Simplify config
 ### Traefik
 - [x] Prepare traefik.toml
 - [x] Add HTTPS
@@ -66,6 +70,8 @@ Version: jupyterhub/jupyterhub:3.1.1 (JupyterHub Dockerfile, config in jupyterhu
 Version: dockerspawner==12.1.0 (pip install in JupyterHub Dockerfile, config in jupyterhub_config.py)
 
 [DockerSpawner install](https://jupyterhub-dockerspawner.readthedocs.io/en/latest/install.html)
+
+[DockerSpawner mounting volumes](https://discourse.jupyter.org/t/dockerspawner-and-volumes-from-host/7008/4)
 
 ### 3. Jupyterlab - Jupyter notebook
 Version: jupyter/scipy-notebook:hub-3.1.1 (Jupyterlab Dockerfile)
