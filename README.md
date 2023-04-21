@@ -1,101 +1,100 @@
-# JupyterHub on Docker
-This is updated version of ["*JupyterHub deployment in use at Université de Versailles*"](https://github.com/defeo/jupyterhub-docker).
+# JupyterHub - Docker
 
-## Run
+## Uruchomienie
 > docker-compose build
 
-> docker-compose run
+> docker-compose run -d
+
+## Konfiguracja
+Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych.
+
+## Osobne katalogi dla użytkowników
+W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system wykrywa przedrostek `@stud.prz.edu.pl` oraz `@prz.edu.pl`, a następnie dzieli użytkowników na dwie grupy. Odbywa się to w pliku `/app/jupyterhub/config.py`, w funkcji `MyDockerSpawner`.
+
+# TODO
+
+## Projekt
+- [x] Przygotowanie pliku docker-compose.yml
+- [x] Uporządkowanie struktury projektu
+## JupyterHub
+- [x] Przygodowanie dla uwierzytelniania CAS
+- [x] Przygotowanie pliku juptyerhub_config.py
+- [x] Zmiana katalogu z danymi użytkowników
+- [ ] Dodanie obsługi kursów
+## Proxy
+- [x] Przygotowanie pliku traefik.yml
+- [x] Dodanie obsługi HTTPS
+- [x] Konfiguracja certyfikatów
+## Notebook
+- [x] Naprawa braku uprawnień przy tworzeniu nowego notebooka
+- [ ] Dodanie jądra Julii i R
+- [ ] Dodanie obsługi C++
+- [ ] Przygotowanie pliku z paczkami pythona
 
 
-## Todo
-- [ ] Prepare environment variable file
-### Docker-compose
-- [x] Recreate docker-compose.yml
-### JupyterHub
-- [x] Prepare for CAS authentication
-- [x] Prepare jupyterhub_config.py
-- [ ] Fix not using allowed_users
-- [ ] Reapir CAS authentication
-- [x] Change directory of user data
-- [ ] Simplify config
-### Traefik
-- [x] Prepare traefik.toml
-- [x] Add HTTPS
-- [x] Configure redirect
-- [x] Prepare certificates
-### Jupyterlab
-- [x] Repair issuficient permissions while creating new notebook
-- [ ] Change user name in container (!whoami)
-- [ ] Add custom logo
-- [ ] Add python packages
-- [ ] Remove notifications
-- [ ] Remove widgets
-- [x] Add Julia kernel
-- [x] Add R kernel
-- [ ] Add c++ kernel
-
-## Repository structure
+## Struktura repozytorium
 ```
 JupyterHub
 ├── .env
 ├── README.md
 ├── docker-compose.yml
-├── jupyterhub
-│   ├── Dockerfile
-│   └── jupyterhub_config.py
-├── jupyterlab
-│   └── Dockerfile
-└── traefik
-    ├── tls.yml
-    ├── localhost-key.pem
-    ├── localhost.pem
-    └── traefik.toml
+├── app
+│   ├── jupyterhub
+│   │   ├── Dockerfile
+|   |   └── config.py
+│   |── jupyterlab
+│   |   └── Dockerfile
+|   |── proxy
+│   |   |── Dockerfile
+│   |   |── traefik.yml
+│   |   |── tls.yml
+│   |   |── certs
+│   |   |   ├── localhost-key.pem
+│   |   |   └── localhost.pem
+├── appdata
+│   ├── teachers
+│   ├── students
+│   └── others
 ```
 
+# Dokumentacja
+## 1. JupyterHub
+Wersja: jupyterhub/jupyterhub:3.1.1
 
-### 1. Traefik - Reverse proxy
-Version: traefik:v2.9 (Docker-compose)
+*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/config.py)*
+
+[JupyterHub config file](https://github.com/jupyterhub/jupyterhub-deploy-docker)
+
+## 2. Proxy
+Wersja: traefik:v2.9
+
+Konfiguracja pliku TLS, musi znajdować się w osobnym pliku !, w tym przypadku jest to tls.yml
+
+*(Znajduje się w /app/proxy/Dockerfile oraz konfiguracja w /app/proxy/traefik.yml)*
 
 [Traefik documentation](https://doc.traefik.io/traefik/)
-[Traefik config Entry Poionts](https://doc.traefik.io/traefik/routing/entrypoints/)
 
-The TLS configuration shuld be in separate file (tls.yml) and mounted to traefik container, in config file (traefik.yml) it is included in providers section.
+[Traefik config entry poionts](https://doc.traefik.io/traefik/routing/entrypoints/)
 
-### 2. JupyterHub
-Version: jupyterhub/jupyterhub:3.1.1 (JupyterHub Dockerfile, config in jupyterhub_config.py)
+## 3. Notebook
+Wersja: jupyter/scipy-notebook:hub-3.1.1
 
-[Jupyterhub config](https://github.com/jupyterhub/jupyterhub-deploy-docker)
-
-#### 2.1 DockerSpawner
-Version: dockerspawner==12.1.0 (pip install in JupyterHub Dockerfile, config in jupyterhub_config.py)
-
-[DockerSpawner install](https://jupyterhub-dockerspawner.readthedocs.io/en/latest/install.html)
-
-[DockerSpawner mounting volumes](https://discourse.jupyter.org/t/dockerspawner-and-volumes-from-host/7008/4)
-
-### 3. Jupyterlab - Jupyter notebook
-Version: jupyter/scipy-notebook:hub-3.1.1 (Jupyterlab Dockerfile)
+*(Znajduje się w /app/jupyterlab/Dockerfile)*
 
 [Building Docker image for Jupyter Notebook](https://jupyterhub-dockerspawner.readthedocs.io/en/latest/docker-image.html)
 
 [Datascience-notebook](https://hub.docker.com/r/jupyter/datascience-notebook/tags/)
 
+## 4. JHubAuthenticators - CAS Authentication
+Wersja: jhubauthenticators==1.0.2
 
-### 4. Jhubauthenticators - CAS authentication
-Version: jhubauthenticators==1.0.2 (pip install in JupyterHub Dockerfile, config in jupyterhub_config.py)
+*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/config.py)*
 
 [CAS authenticator](https://github.com/cwaldbieser/jhub_cas_authenticator)
 
+## 5. JupyterHub Idle Culler Service
+Wersja 1.2.1
 
-### 5. JupyterHub Idle Culler Service
-Version: 1.2.1 (pip install in JupyterHub Dockerfile, config in jupyterhub_config.py)
+*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/config.py)*
 
 [JupyterHub Idle Culler Service](https://github.com/jupyterhub/jupyterhub-idle-culler)
-
-
-### 6. JupyterHub Traefik Proxy
-Version: 0.3.0
-
-[Installation](https://jupyterhub-traefik-proxy.readthedocs.io/en/latest/install.html)
-[JupyterHub Traefik Proxy PyPI](https://pypi.org/project/jupyterhub-traefik-proxy/)
-[JupyterHub Traefik Proxy](https://github.com/jupyterhub/traefik-proxy)
