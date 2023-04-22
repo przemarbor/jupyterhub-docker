@@ -13,5 +13,5 @@ RUN pip install \
     jupyterhub-idle-culler==1.2.1
 
 # Copy configuration file
-COPY ./config.py /srv/jupyterhub/jupyterhub_config.py
+COPY ./jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
 CMD ["jupyterhub", "-f", "/srv/jupyterhub/jupyterhub_config.py"]

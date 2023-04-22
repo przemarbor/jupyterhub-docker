@@ -8,18 +8,18 @@ services:
     ports:
       - "443:443"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - ./app/proxy/traefik.yml:/etc/traefik/traefik.yml
-      - ./app/proxy/tls.yml:/etc/traefik/tls.yml
-      - ./app/proxy/certs/:/etc/certs/
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./app/proxy/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./app/proxy/tls.yml:/etc/traefik/tls.yml:ro"
+      - "./app/proxy/certs/:/etc/certs/:ro"
 
   jupyterhub:
     build: ./app/jupyterhub
     container_name: jupyterhub
     volumes:
     - "/var/run/docker.sock:/var/run/docker.sock:rw"
-    - "jupyterhub-data:/data"
-    - "./app/jupyterhub/config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
+    - "jupyterhub-data:/data:rw"
+    - "./app/jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
     environment:
       - ACTIVE_SERVER_LIMIT=${ACTIVE_SERVER_LIMIT}
       - ACTIVITY_RESOLUTION=${ACTIVITY_RESOLUTION}

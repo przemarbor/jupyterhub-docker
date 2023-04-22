@@ -6,7 +6,9 @@
 > docker-compose run -d
 
 ## Konfiguracja
-Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych.
+Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych. 
+
+Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.
 
 ## Osobne katalogi dla użytkowników
 W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system wykrywa przedrostek `@stud.prz.edu.pl` oraz `@prz.edu.pl`, a następnie dzieli użytkowników na dwie grupy. Odbywa się to w pliku `/app/jupyterhub/config.py`, w funkcji `MyDockerSpawner`.
@@ -27,7 +29,7 @@ W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system
 - [x] Konfiguracja certyfikatów
 ## Notebook
 - [x] Naprawa braku uprawnień przy tworzeniu nowego notebooka
-- [ ] Dodanie jądra Julii i R
+- [x] Dodanie jądra Julii i R
 - [ ] Dodanie obsługi C++
 - [ ] Przygotowanie pliku z paczkami pythona
 
@@ -68,7 +70,7 @@ Wersja: jupyterhub/jupyterhub:3.1.1
 ## 2. Proxy
 Wersja: traefik:v2.9
 
-Konfiguracja pliku TLS, musi znajdować się w osobnym pliku !, w tym przypadku jest to tls.yml
+Konfiguracja pliku TLS, musi znajdować się w osobnym pliku!, w tym przypadku jest to tls.yml
 
 *(Znajduje się w /app/proxy/Dockerfile oraz konfiguracja w /app/proxy/traefik.yml)*
 
