@@ -1,2 +1,5 @@
-appdata/
-app/proxy/certs/
+appdata/others/*
+appdata/students/*
+appdata/teachers/*
+app/proxy/certs/*
+.*
