@@ -19,7 +19,7 @@ c.DockerSpawner.cmd = os.environ.get("DOCKER_SPAWN_CMD", "start-singleuser.sh")
 c.DockerSpawner.use_internal_ip = True
 c.DockerSpawner.network_name = os.environ.get("DOCKER_NETWORK_NAME")
 c.DockerSpawner.remove = True # Remove containers once they are stopped
-c.DockerSpawner.debug = False # For debugging arguments passed to spawned containers
+c.DockerSpawner.debug = True # For debugging arguments passed to spawned containers
 c.JupyterHub.hub_ip = "jupyterhub" # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_port = 9090
 c.JupyterHub.cookie_secret_file = "/data/jupyterhub_cookie_secret" # Persist hub data on volume mounted inside container
@@ -27,24 +27,9 @@ c.JupyterHub.db_url = "sqlite:////data/jupyterhub.sqlite"
 
 notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR", "/home/jovyan")
 c.DockerSpawner.notebook_dir = notebook_dir
-appdata_dir = os.environ.get("APPDATA_DIR", "/data")
 
-class MyDockerSpawner(DockerSpawner):
-    def start(self):
-        userName = self.user.name
-        if "@prz.edu.pl" in userName:
-            self.volumes = {appdata_dir + '/teachers/{}'.format(userName): notebook_dir,
-                            appdata_dir + '/shared': {'bind': notebook_dir + '/shared', 'mode': 'rw'}}
-        elif "@stud.prz.edu.pl" in userName:
-            self.volumes = {appdata_dir + '/students/{}'.format(userName): notebook_dir,
-                            appdata_dir + '/shared': {'bind': notebook_dir + '/shared', 'mode': 'ro'}}
-        else:
-            self.volumes = {appdata_dir + '/others/{}'.format(userName): notebook_dir,
-                            appdata_dir + '/shared': {'bind': notebook_dir + '/shared', 'mode': 'ro'}}
-        return super().start()
-
-c.JupyterHub.spawner_class = MyDockerSpawner
-
+c.DockerSpawner.volumes = {"jupyterhub-user-{username}": notebook_dir}
+c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
 
 debug = os.environ.get("DEBUG", False)
 if debug:
@@ -52,7 +37,7 @@ if debug:
     c.JupyterHub.authenticator_class = "dummy"
     c.DockerSpawner.debug = True
 else:
-    c.Authenticator.admin_users = {"166673@stud.prz.edu.pl"}
+    c.Authenticator.admin_users = {"admin"}
     c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
     c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
     c.CASLocalAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'

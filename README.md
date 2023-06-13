@@ -11,6 +11,8 @@ Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym c
 Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.
 
 ## Osobne katalogi dla użytkowników
+*W trakcie pracy*
+
 W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system wykrywa przedrostek `@stud.prz.edu.pl` oraz `@prz.edu.pl`, a następnie dzieli użytkowników na dwie grupy. Odbywa się to w pliku `/app/jupyterhub/config.py`, w funkcji `MyDockerSpawner`.
 
 # TODO
