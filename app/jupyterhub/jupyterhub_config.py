@@ -1,4 +1,4 @@
-# Configuration file for JupyterHub
+#Configuration file for JupyterHub
 
 # JupyterHub version: 3.1.1
 # Dockerspawner version: 12.1.0
@@ -45,42 +45,20 @@ class MyDockerSpawner(DockerSpawner):
 
 c.JupyterHub.spawner_class = MyDockerSpawner
 
-# Administrator users
-c.Authenticator.admin_users = {"166673@stud.prz.edu.pl"}
 
-## Dummy Authenticator for testing only !!!
-#c.JupyterHub.authenticator_class = "dummy"
-
-
-
-## ----------------------------------------
-## JupyterHub Cas Authenticator
-# adapted config from GitHub cwaldbieser/jhub_cas_authenticator
-
-c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
-
-# The CAS URL to redirect unauthenticated users to.
-c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
-c.CASLocalAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
-
-
-# The service URL the CAS server will redirect the browser back to on successful authentication.
-# If not set, this is set to the same URL the request comes in on.  This will work fine for
-# simple deployments, but deployments behind a proxy or load banalncer will likely need to
-# be adjusted so the CAS service redirects back to the *real* login URL for your Jupyterhub.
-c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
-
-# Path to CA certificates the CAS client will trust when validating a service ticket.
-#c.CASAuthenticator.cas_client_ca_certs = '/path/to/ca_certs.pem'
-
-# The CAS endpoint for validating service tickets.
-c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas-server/serviceValidate'
-
-# A set of attribute name and value tuples a user must have to be allowed access.
-#c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
-## ----------------------------------------
-
-
+debug = os.environ.get("DEBUG", False)
+if debug:
+    c.Authenticator.admin_users = {"admin"}
+    c.JupyterHub.authenticator_class = "dummy"
+    c.DockerSpawner.debug = True
+else:
+    c.Authenticator.admin_users = {"166673@stud.prz.edu.pl"}
+    c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
+    c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
+    c.CASLocalAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
+    c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
+    c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas-server/serviceValidate'
+    #c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
 
 
 ## ----------------------------------------
@@ -111,5 +89,3 @@ c.JupyterHub.services = [
         ],
     }
 ]
-
-## ----------------------------------------

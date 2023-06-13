@@ -23,6 +23,7 @@ W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system
 - [x] Przygotowanie pliku juptyerhub_config.py
 - [x] Zmiana katalogu z danymi użytkowników
 - [ ] Dodanie obsługi kursów
+- [ ] Problem z uprawnieniami do katalogów użytkowników [Tu występuje taki sam błąd](https://github.com/jupyterhub/dockerspawner/issues/160)
 ## Proxy
 - [x] Przygotowanie pliku traefik.yml
 - [x] Dodanie obsługi HTTPS

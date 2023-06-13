@@ -2,4 +2,4 @@ appdata/others/*
 appdata/students/*
 appdata/teachers/*
 app/proxy/certs/*
-.*
+.vscode

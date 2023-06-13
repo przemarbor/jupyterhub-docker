@@ -1,4 +1,3 @@
-# Docker-compose version
 version: '3.9'
 
 services:
@@ -6,20 +5,19 @@ services:
     build: ./app/proxy
     container_name: proxy
     ports:
-      - "80:80"
       - "443:443"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./app/proxy/traefik.yml:/etc/traefik/traefik.yml:ro"
-      - "./app/proxy/tls.yml:/etc/traefik/tls.yml:ro"
-      - "./app/proxy/certs/:/etc/certs/:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./app/proxy/traefik.yml:/etc/traefik/traefik.yml
+      - ./app/proxy/tls.yml:/etc/traefik/tls.yml
+      - ./app/proxy/certs/:/etc/certs/
 
   jupyterhub:
     build: ./app/jupyterhub
     container_name: jupyterhub
     volumes:
     - "/var/run/docker.sock:/var/run/docker.sock:rw"
-    - "jupyterhub-data:/data:rw"
+    - "jupyterhub-data:/data"
     - "./app/jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
     environment:
       - ACTIVE_SERVER_LIMIT=${ACTIVE_SERVER_LIMIT}
@@ -31,6 +29,7 @@ services:
       - DOCKER_NETWORK_NAME=${COMPOSE_PROJECT_NAME}_default
       - HOST=${HOST}
       - JUPYTERHUB_IDLE_CULLER_TIMEOUT=${IDLE_CULLER_TIMEOUT}
+      - DEBUG=${DEBUG}
     labels:
       - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
       - "traefik.http.routers.jupyterhub.tls=true"
