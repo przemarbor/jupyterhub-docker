@@ -31,8 +31,8 @@ c.DockerSpawner.notebook_dir = notebook_dir
 c.DockerSpawner.volumes = {"jupyterhub-user-{username}": notebook_dir}
 c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
 
-debug = os.environ.get("DEBUG", False)
-if debug:
+debug = os.environ.get("DEBUG", "False")
+if debug == "True":
     c.Authenticator.admin_users = {"admin"}
     c.JupyterHub.authenticator_class = "dummy"
     c.DockerSpawner.debug = True
