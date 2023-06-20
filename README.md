@@ -5,11 +5,13 @@
 
 > docker-compose run -d
 
+Dostęp do JupyterHuba: https://{nazwa_hosta} (domyślnie port 80 HTTP jest wyłączony, przez co wymaga użycia HTTPS)
 ## Konfiguracja
 Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych. 
 
 Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.
 
+Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej. (np. 123456@prz.edu.pl)
 ## Osobne katalogi dla użytkowników
 *W trakcie pracy*
 
@@ -46,7 +48,7 @@ JupyterHub
 ├── app
 │   ├── jupyterhub
 │   │   ├── Dockerfile
-|   |   └── config.py
+|   |   └── jupyterhub_config.py
 │   |── jupyterlab
 │   |   └── Dockerfile
 |   |── proxy
@@ -56,17 +58,13 @@ JupyterHub
 │   |   |── certs
 │   |   |   ├── localhost-key.pem
 │   |   |   └── localhost.pem
-├── appdata
-│   ├── teachers
-│   ├── students
-│   └── others
 ```
 
 # Dokumentacja
 ## 1. JupyterHub
 Wersja: jupyterhub/jupyterhub:3.1.1
 
-*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/config.py)*
+*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
 
 [JupyterHub config file](https://github.com/jupyterhub/jupyterhub-deploy-docker)
 
@@ -93,13 +91,13 @@ Wersja: jupyter/scipy-notebook:hub-3.1.1
 ## 4. JHubAuthenticators - CAS Authentication
 Wersja: jhubauthenticators==1.0.2
 
-*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/config.py)*
+*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
 
 [CAS authenticator](https://github.com/cwaldbieser/jhub_cas_authenticator)
 
 ## 5. JupyterHub Idle Culler Service
 Wersja 1.2.1
 
-*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/config.py)*
+*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
 
 [JupyterHub Idle Culler Service](https://github.com/jupyterhub/jupyterhub-idle-culler)
