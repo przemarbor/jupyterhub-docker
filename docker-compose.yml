@@ -30,6 +30,7 @@ services:
       - DEBUG=${DEBUG}
     labels:
       - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
+      - "traefik.http.routers.whoami.entrypoints=https"
       - "traefik.http.routers.jupyterhub.tls.certresolver=tlsresolver"
 
   notebook:

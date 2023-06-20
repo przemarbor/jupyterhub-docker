@@ -20,6 +20,6 @@ providers:
 certificatesResolvers:
   tlsresolver:
     acme:
-      tlsChallenge: true
+      tlschallenge: true
       email: 166673@stud.prz.edu.pl
       storage: /letsencrypt/acme.json
