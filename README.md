@@ -11,7 +11,7 @@ Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym c
 
 ~~Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
 
-Traefik sam generuje certyfikaty TLS, więc nie jest wymagane ich wgranie.
+Traefik sam generuje certyfikaty TLS, więc nie jest wymagane ich wgranie. Konifugracja adresu email administratora dla którego jest generowany certyfikat w pliku `/app/proxy/traefik.yml`
 
 Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej. (np. 123456@prz.edu.pl)
 ## Osobne katalogi dla użytkowników
