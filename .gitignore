@@ -3,3 +3,4 @@ appdata/students/*
 appdata/teachers/*
 app/proxy/certs/*
 .vscode
+.DS_Store
