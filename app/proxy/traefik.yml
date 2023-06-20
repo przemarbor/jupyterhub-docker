@@ -18,3 +18,10 @@ providers:
     filename: /etc/traefik/tls.yml
   docker:
     endpoint: "unix:///var/run/docker.sock"
+
+certificatesResolvers:
+  tlsresolver:
+    acme:
+      tlsChallenge: true
+      email: 166673@stud.prz.edu.pl
+      storage: /letsencrypt/acme.json

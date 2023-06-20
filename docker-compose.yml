@@ -11,6 +11,7 @@ services:
       - ./app/proxy/traefik.yml:/etc/traefik/traefik.yml
       - ./app/proxy/tls.yml:/etc/traefik/tls.yml
       - ./app/proxy/certs/:/etc/certs/
+      - ./letsencrypt:/letsencrypt
 
   jupyterhub:
     build: ./app/jupyterhub
@@ -31,7 +32,7 @@ services:
       - DEBUG=${DEBUG}
     labels:
       - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
-      - "traefik.http.routers.jupyterhub.tls=true"
+      - "traefik.http.routers.jupyterhub.tls.certresolver=tlsresolver"
 
   notebook:
     build: ./app/notebook
