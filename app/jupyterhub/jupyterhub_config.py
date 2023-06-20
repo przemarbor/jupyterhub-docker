@@ -40,7 +40,7 @@ else:
     c.Authenticator.admin_users = {"admin"}
     c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
     c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
-    c.CASLocalAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
+    c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
     c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
     c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas-server/serviceValidate'
     #c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
