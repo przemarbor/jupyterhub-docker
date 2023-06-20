@@ -9,7 +9,9 @@ Dostęp do JupyterHuba: https://{nazwa_hosta} (domyślnie port 80 HTTP jest wył
 ## Konfiguracja
 Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych. 
 
-Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.
+~~Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
+
+Traefik sam generuje certyfikaty TLS, więc nie jest wymagane ich wgranie.
 
 Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej. (np. 123456@prz.edu.pl)
 ## Osobne katalogi dla użytkowników
@@ -32,6 +34,7 @@ W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system
 - [x] Przygotowanie pliku traefik.yml
 - [x] Dodanie obsługi HTTPS
 - [x] Konfiguracja certyfikatów
+- [x] Automatyczne generowanie certyfikatów
 ## Notebook
 - [x] Naprawa braku uprawnień przy tworzeniu nowego notebooka
 - [x] Dodanie jądra Julii i R
@@ -54,10 +57,7 @@ JupyterHub
 |   |── proxy
 │   |   |── Dockerfile
 │   |   |── traefik.yml
-│   |   |── tls.yml
-│   |   |── certs
-│   |   |   ├── localhost-key.pem
-│   |   |   └── localhost.pem
+
 ```
 
 # Dokumentacja
@@ -101,3 +101,8 @@ Wersja 1.2.1
 *(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
 
 [JupyterHub Idle Culler Service](https://github.com/jupyterhub/jupyterhub-idle-culler)
+
+## 6. Docker-compose with let's encrypt: TLS Challenge
+Konfiguracja automatycznego generowania certyfikatów TLS, oparta na wykorzystaniu Let's Encrypt.
+
+[Docker-compose with let's encrypt: TLS Challenge](https://doc.traefik.io/traefik/user-guides/docker-compose/acme-tls/)
