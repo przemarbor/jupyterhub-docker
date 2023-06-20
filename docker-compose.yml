@@ -9,8 +9,6 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - ./app/proxy/traefik.yml:/etc/traefik/traefik.yml
-      - ./app/proxy/tls.yml:/etc/traefik/tls.yml
-      - ./app/proxy/certs/:/etc/certs/
       - ./letsencrypt:/letsencrypt
 
   jupyterhub:
