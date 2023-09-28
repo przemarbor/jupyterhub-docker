@@ -1,23 +1,38 @@
 # JupyterHub - Docker
 
-## Uruchomienie
+## Pierwsze uruchomienie
+
+### Konfiguracja wstępna
+- Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych. 
+
+- ~~Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
+
+  Traefik sam generuje certyfikaty TLS, więc nie jest wymagane ich wgranie. Konfiguracja adresu email administratora dla którego jest generowany certyfikat: w pliku `/app/proxy/traefik.yml`.
+
+- Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej. (np. 123456@prz.edu.pl)
+
+
+### Uruchomienie
+
 > docker-compose build
 
 > docker-compose run -d
 
-Dostęp do JupyterHuba: https://{nazwa_hosta} (domyślnie port 80 HTTP jest wyłączony, przez co wymaga użycia HTTPS)
-## Konfiguracja
-Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych. 
+MBnote: nie udalo sie uruchomic `docker-compose run -d`. Zamiast
+tego lepiej sprobowac:
 
-~~Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
+> docker-compose up -d
 
-Traefik sam generuje certyfikaty TLS, więc nie jest wymagane ich wgranie. Konifugracja adresu email administratora dla którego jest generowany certyfikat w pliku `/app/proxy/traefik.yml`
+tego lepiej sprobowac (roznica miedzy `docker-compose up` a `docker-compose run`).
 
-Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej. (np. 123456@prz.edu.pl)
+Usługi szukac pod `https`, np. [https://jupyterhub.xxx.edu.pl](https://jupyterhub.xxx.edu.pl).
+
+Dostęp do JupyterHuba: `https://{nazwa_hosta}` (domyślnie port 80 HTTP jest wyłączony, przez co wymaga użycia HTTPS)
+
 ## Osobne katalogi dla użytkowników
 *W trakcie pracy*
 
-W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system wykrywa przedrostek `@stud.prz.edu.pl` oraz `@prz.edu.pl`, a następnie dzieli użytkowników na dwie grupy. Odbywa się to w pliku `/app/jupyterhub/config.py`, w funkcji `MyDockerSpawner`.
+W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system wykrywa przedrostek `@stud.xxx.edu.pl` oraz `@xxx.edu.pl`, a następnie dzieli użytkowników na dwie grupy. Odbywa się to w pliku `/app/jupyterhub/config.py`, w funkcji `MyDockerSpawner`.
 
 # TODO
 
