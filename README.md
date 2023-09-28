@@ -3,13 +3,17 @@
 ## Pierwsze uruchomienie
 
 ### Konfiguracja wstępna
-- Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy edytować plik `.env` a w nim zmienić wartości zmiennych środowiskowych. 
+Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy:
 
-- ~~Dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
+- edytować plik `.env`. W szczególności zmienić wartość zmiennej środowiskowej HOST (`HOST=localhost` `->` `HOST=jupyterhub.xxx.edu.pl`)
+ 
+- Edycja adresu email administratora dla którego jest generowany certyfikat w pliku `/app/proxy/traefik.yml` (`certificatesResolvers -> tlsresolver -> acme: -> email:`)
 
-  Traefik sam generuje certyfikaty TLS, więc nie jest wymagane ich wgranie. Konfiguracja adresu email administratora dla którego jest generowany certyfikat: w pliku `/app/proxy/traefik.yml`.
+- Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej (np. `123456@xxx.edu.pl`).
 
-- Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej. (np. 123456@prz.edu.pl)
+- ~~dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
+
+  Traefik sam generuje certyfikaty TLS, więc nie jest już wymagane ich wgranie.
 
 
 ### Uruchomienie
