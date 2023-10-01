@@ -37,7 +37,7 @@ if debug == "True":
     c.JupyterHub.authenticator_class = "dummy"
     c.DockerSpawner.debug = True
 else:
-    c.Authenticator.admin_users = {"admin"}
+    c.Authenticator.admin_users = {"admin"} # this line needs to be modified in configuration
     c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
     c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
     c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
