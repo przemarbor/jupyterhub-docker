@@ -1,12 +1,12 @@
 # Dockerfile for JupyterHub
 # JupyterHub version: 3.1.1
 
-FROM jupyterhub/jupyterhub:3.1.1
+FROM jupyterhub/jupyterhub:4.0.2
 
 # Install packages
 RUN pip install \
     # Dockerspawner for JupyterHub
-    dockerspawner==12.1.0 \
+    dockerspawner==13.0.0 \
     # JupyterHub CAS Authenticator
     jhub_cas_authenticator==1.0.2 \
     # JupyterHub Idle Culler
