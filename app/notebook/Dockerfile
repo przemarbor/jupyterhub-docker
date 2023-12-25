@@ -1,10 +1,10 @@
 # Dockerfile for JupyterLab
 # Jupyterhub version: 3.1.1
 
-FROM jupyter/datascience-notebook:hub-3.1.1
+FROM jupyter/datascience-notebook:hub-4.0.2
 
 # JupyterHub Version
-ARG JUPYTERHUB_VERSION=3.1.1
+ARG JUPYTERHUB_VERSION=4.0.2
 
 USER root
 RUN apt-get update && \
