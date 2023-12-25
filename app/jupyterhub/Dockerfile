@@ -1,7 +1,7 @@
 # Dockerfile for JupyterHub
 # JupyterHub version: 3.1.1
 
-FROM jupyterhub/jupyterhub:3.1.1
+FROM jupyterhub/jupyterhub:4.0.2
 
 # Install packages
 RUN pip install \
