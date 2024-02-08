@@ -1,4 +1,4 @@
-#Configuration file for JupyterHub
+# Configuration file for JupyterHub
 
 # JupyterHub version: 3.1.1
 # Dockerspawner version: 12.1.0
@@ -18,11 +18,11 @@ c.DockerSpawner.image = os.environ.get("DOCKER_NOTEBOOK_IMAGE", "notebook_img")
 c.DockerSpawner.cmd = os.environ.get("DOCKER_SPAWN_CMD", "start-singleuser.sh")
 c.DockerSpawner.use_internal_ip = True
 c.DockerSpawner.network_name = os.environ.get("DOCKER_NETWORK_NAME")
-c.DockerSpawner.remove = True # Remove containers once they are stopped
-c.DockerSpawner.debug = True # For debugging arguments passed to spawned containers
-c.JupyterHub.hub_ip = "jupyterhub" # User containers will access hub by container name on the Docker network
+c.DockerSpawner.remove = True  # Remove containers once they are stopped
+c.DockerSpawner.debug = True  # For debugging arguments passed to spawned containers
+c.JupyterHub.hub_ip = "jupyterhub"  # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_port = 9090
-c.JupyterHub.cookie_secret_file = "/data/jupyterhub_cookie_secret" # Persist hub data on volume mounted inside container
+c.JupyterHub.cookie_secret_file = "/data/jupyterhub_cookie_secret"  # Persist hub data on volume mounted inside container
 c.JupyterHub.db_url = "sqlite:////data/jupyterhub.sqlite"
 
 notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR", "/home/jovyan")
@@ -37,13 +37,19 @@ if debug == "True":
     c.JupyterHub.authenticator_class = "dummy"
     c.DockerSpawner.debug = True
 else:
-    c.Authenticator.admin_users = {"admin"} # this line needs to be modified in configuration
-    c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
-    c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
-    c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
-    c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
-    c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas-server/serviceValidate'
-    #c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
+    c.Authenticator.admin_users = {
+        "admin"
+    }  # this line needs to be modified in configuration
+    c.JupyterHub.authenticator_class = (
+        "jhub_cas_authenticator.cas_auth.CASAuthenticator"
+    )
+    c.CASAuthenticator.cas_login_url = "https://cas.prz.edu.pl/cas-server/login"
+    c.CASAuthenticator.cas_logout_url = "https://cas.prz.edu.pl/cas-server/logout"
+    c.CASAuthenticator.cas_service_url = "https://%s/hub/login" % os.environ["HOST"]
+    c.CASAuthenticator.cas_service_validate_url = (
+        "https://cas.prz.edu.pl/cas-server/serviceValidate"
+    )
+    # c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
 
 
 ## ----------------------------------------
@@ -69,8 +75,11 @@ c.JupyterHub.services = [
         "name": "jupyterhub-idle-culler-service",
         "command": [
             sys.executable,
-            "-m", "jupyterhub_idle_culler",
-            "--timeout={0}".format(os.environ.get("JUPYTERHUB_IDLE_CULLER_TIMEOUT", "3600")),
+            "-m",
+            "jupyterhub_idle_culler",
+            "--timeout={0}".format(
+                os.environ.get("JUPYTERHUB_IDLE_CULLER_TIMEOUT", "3600")
+            ),
         ],
     }
 ]
