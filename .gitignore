@@ -1,3 +1,4 @@
+.vagrant/
 appdata/others/*
 appdata/students/*
 appdata/teachers/*
