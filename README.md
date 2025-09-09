@@ -1,151 +1,152 @@
 # JupyterHub - Docker
 
-## Wprowadzenie
-Niniejszy projekt implementuje środowisko JupyterHub z wykorzystaniem kontenerów Docker, serwera Traefik jako reverse-proxy oraz różnych mechanizmów uwierzytelniania i zarządzania użytkownikami. System jest zdefiniowany w plikach `docker-compose.yml`, `Dockerfile`, `jupyterhub_config.py` oraz `jupyterhub_config_test.py`.
+## Introduction
+This project implements a JupyterHub environment using Docker containers, the Traefik server as a reverse proxy, and various authentication and user management mechanisms. The system is defined in the `docker-compose.yml`, `Dockerfile`, `jupyterhub_config.py`, and `jupyterhub_config_test.py` files.
 
-## Konfiguracja i uruchomienie
-
-
-### Konfiguracja wstępna
-Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska, głównie poprzez edycję pliku `.env`.
-
-- **Adres hosta**: Zmień wartość zmiennej środowiskowej `HOST` w pliku `.env` na adres, pod którym JupyterHub będzie dostępny (np. `HOST=jupyterhub.prz.edu.pl`).
-  
-- **Adres e-mail**: Edytuj adres e-mail administratora w pliku `traefik.yml`. Jest on używany do generowania certyfikatu TLS przez Let's Encrypt.
-  
-- **Ustalenie administratora**: W pliku `jupyterhub_config.py` dodaj adres e-mail administratora do zmiennej `c.Authenticator.admin_users`.
-
-- ~~dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
-
-**Uwaga**: Wgrywanie certyfikatów TLS do `/app/proxy/certs/` nie jest już wymagane, ponieważ Traefik automatycznie generuje certyfikaty za pomocą Let's Encrypt.
+## Configuration and Launch
 
 
+### Initial Configuration
+Before the first launch, the environment must be configured, mainly by editing the `.env` file.
 
-### Uruchomienie
-Aby uruchomić projekt, skorzystaj z odpowiednich plików docker-compose.yml w zależności od środowiska, którego potrzebujesz.
+- **Host Address**: Change the value of the `HOST` environment variable in the `.env` file to the address where JupyterHub will be accessible (e.g., `HOST=jupyterhub.prz.edu.pl`).
 
-#### Środowisko produkcyjne
-Aby uruchomić serwer produkcyjny, użyj polecenia:
+- **Email Address**: Edit the administrator email address in the `traefik.yml` file. It is used for generating a TLS certificate via Let's Encrypt.
+
+- **Administrator Setup**: In the `jupyterhub_config.py` file, add the administrator's email address to the `c.Authenticator.admin_users` variable.
+
+- ~~Additionally, TLS certificates needed to be uploaded to `/app/proxy/certs/` *(using file names: cert-host-key.pem and cert-host.pem)*.~~
+
+**Note**: Uploading TLS certificates to `/app/proxy/certs/` is no longer required, as Traefik automatically generates certificates via Let's Encrypt.
+
+
+
+### Launch
+To start the project, use the appropriate docker-compose.yml files depending on the environment you need.
+
+#### Production Environment
+To run the production server, use the command:
 
 ```bash
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
-Usługi są dostępne pod adresem https://{HOST} (np. https://jupyterhub.prz.edu.pl).
+The services are available at https://{HOST} (e.g., https://jupyterhub.prz.edu.pl
+).
 
-#### Środowisko testowe
-Aby uruchomić serwer testowy (niezależnie od produkcyjnego), użyj polecenia:
+#### Test Environment
+
+To start the test server (independent of production), run:
 
 ```bash
 docker-compose -f docker-compose.test.yml up -d --build
 ```
 
-Wersja testowa dostępna jest na porcie 8443 pod adresem https://{HOST}:8443/test/.
+The test version is available on port 8443 at https://{HOST}:8443/test/.
+
+By default, port 80 (HTTP) is disabled, and traffic is redirected to port 443 (HTTPS).
 
 
-Domyślnie port 80 (HTTP) jest wyłączony, a ruch jest przekierowywany na port 443 (HTTPS).
+## Main Features
 
+### 1. User Container Management
+* **Dockerspawner**: Creates individual Jupyter Notebook instances for each user.
+* **Resource Limits**: Memory (`MEM_LIMIT`) and CPU (`CPU_LIMIT`) limits are dynamically configured.
+* **Volume Management**:
+    * Private volume for each user.
+    * Public volume for shared resources.
 
-## Główne funkcjonalności
-
-### 1. Zarządzanie kontenerami użytkowników
-* **Dockerspawner**: Tworzenie pojedynczych instancji Jupyter Notebook dla każdego użytkownika.
-* **Limity zasobów**: Limity pamięci (`MEM_LIMIT`) i procesora (`CPU_LIMIT`) są konfigurowane dynamicznie.
-* **Zarządzanie wolumenami**:
-    * Wolumen prywatny dla każdego użytkownika.
-    * Wolumen publiczny dla współdzielonych zasobów.
-
-### 2. Uwierzytelnianie
-* **CAS Authenticator**: Integracja z systemem uwierzytelniania CAS.
-* **Dummy Authenticator**: Tryb testowy dla rozwoju lokalnego.
+### 2. Authentication
+* **CAS Authenticator**: Integration with the CAS authentication system.
+* **Dummy Authenticator**: Test mode for local development.
 
 ### 3. Idle Culler
-Automatyczne zamykanie nieaktywnych sesji po określonym czasie.
+Automatically shuts down inactive sessions after a specified period.
 
 ### 4. Reverse Proxy (Traefik)
-* Automatyczne zarządzanie certyfikatami SSL.
-* Konfiguracja punktów końcowych.
+* Automatic SSL certificate management.
+* Endpoint configuration.
 
 ---
 
-## Dokładna specyfikacja dostępu do wolumenów
+## Detailed Volume Access Specification
 
-### 1. Wolumen prywatny (`/home/jovyan/work`)
-* **Przeznaczenie**: 
-  * Przestrzeń robocza użytkownika
-  * Dane prywatne i konfiguracje
-  * Ścieżka na hoście: `/var/lib/docker/volumes/jupyterhub-user-<username>-work/_data`
+### 1. Private Volume (`/home/jovyan/work`)
+* **Purpose**: 
+  * User workspace
+  * Private data and configurations
+  * Host path: `/var/lib/docker/volumes/jupyterhub-user-<username>-work/_data`
 
-### Wolumen publiczny (`/home/jovyan/public`)
-* **Dostęp dla wszystkich użytkowników**:
-    * Tylko do odczytu (read-only).
-    * Brak możliwości zapisu.
-    * Ścieżka na hoście: `/var/lib/docker/volumes/jupyterhub-public/_data`.
+### Public Volume (`/home/jovyan/public`)
+* **Access for all users**:
+    * Read-only
+    * No write permissions
+    * Host path: `/var/lib/docker/volumes/jupyterhub-public/_data`
 
-### Wolumen `my_public` (specjalny dla wykładowców)
-* **Mechanizm działania**:
-    * Automatyczne kopiowanie plików z `my_public` do publicznego folderu na hoście.
-    * Implementowane przez skrypt monitorujący zmiany za pomocą `inotifywait`.
-* **Dostęp**:
-    * Tylko wykładowcy (użytkownicy bez 6-cyfrowego ID) mają dostęp do wolumenu (odczyt-zapis).
-    * Studenci nie mają do niego dostępu.
+### `my_public` Volume (instructors only)
+* **Operation**:
+    * Automatically copies files from `my_public` to the public folder on the host.
+    * Implemented via a script monitoring changes with `inotifywait`.
+* **Access**:
+    * Only instructors (users without a 6-digit ID) have read-write access.
+    * Students do not have access.
 
-### Wolumen informacyjny (`/home/jovyan/-README-`)
-* **Dostęp dla wszystkich użytkowników**:
-    * Tylko do odczytu (read-only).
-    * Brak możliwości zapisu.
-    * Ścieżka na hoście: `/var/lib/docker/volumes/readme_dir/_data`.
+### Information Volume (`/home/jovyan/-README-`)
+* **Access for all users**:
+    * Read-only
+    * No write permissions
+    * Host path: `/var/lib/docker/volumes/readme_dir/_data`
 
-### Rzeczywiste uprawnienia:
-| Wolumen | Studenci (6-cyfrowe ID) | Wykładowcy (inne ID) |
+### Actual Permissions:
+| Volume | Students (6-digit ID) | Instructors (other IDs) |
 | :--- | :---: | :---: |
-| `work` | Odczyt-Zapis | Odczyt-Zapis |
-| `public` | Tylko do odczytu | Tylko do odczytu |
-| `my_public` | Brak dostępu | Odczyt-Zapis |
-| `-README-` | Tylko do odczytu | Tylko do odczytu |
+| `work` | Read-Write | Read-Write |
+| `public` | Read-only | Read-only |
+| `my_public` | No access | Read-Write |
+| `-README-` | Read-only | Read-only |
 
 ---
 
-## Obejście problemów z folderami publicznymi
-System wykorzystuje mechanizm kopiowania z `my_public` do publicznego folderu na hoście, ponieważ:
-1.  Docker Volume ma ograniczenia w zarządzaniu uprawnieniami.
-2.  Bezpośredni zapis do publicznego wolumenu powodował problemy z synchronizacją.
-3.  Rozwiązanie gwarantuje, że tylko zatwierdzone pliki wykładowców trafiają do przestrzeni publicznej.
+## Public Folder Workaround
+The system uses a mechanism to copy files from `my_public` to the public folder on the host because:
+1. Docker Volumes have limitations in managing permissions.
+2. Direct writes to the public volume caused synchronization issues.
+3. This solution ensures that only approved instructor files reach the public space.
 
 ---
 
-# Status projektu
+# Project Status
 
-### Projekt
-- [x] Przygotowanie pliku `docker-compose.yml`
-- [x] Uporządkowanie struktury projektu
-- [x] Rozdzielenie konfiguracji na wersje deweloperską i produkcyjną
-- [x] Konfiguracja zmiennych środowiskowych
+### Project
+- [x] Prepare `docker-compose.yml`
+- [x] Organize project structure
+- [x] Separate configuration for development and production
+- [x] Configure environment variables
 
 ### JupyterHub
-- [x] Rozwiązanie problemów z uprawnieniami
-- [x] Przygotowanie dla uwierzytelniania CAS
-- [ ] Implementacja systemu kursów
+- [x] Resolve permission issues
+- [x] Setup CAS authentication
+- [ ] Implement course management system
 
 ### Notebook
-- [x] Naprawa braku uprawnień przy tworzeniu nowego notebooka
-- [x] Dodanie jądra Julii i R
-- [x] Dodanie obsługi C++
-- [x] Przygotowanie pliku z paczkami pythona
-- [ ] Dodanie jądra Maximy
+- [x] Fix permission issues when creating a new notebook
+- [x] Add Julia and R kernels
+- [x] Add C++ support
+- [x] Prepare Python packages file
+- [ ] Add Maxima kernel
 
 ### Proxy
-- [x] Przygotowanie pliku `traefik.yml`
-- [x] Dodanie obsługi HTTPS
-- [x] Konfiguracja certyfikatów
-- [x] Automatyczne generowanie certyfikatów
+- [x] Prepare `traefik.yml`
+- [x] Add HTTPS support
+- [x] Configure certificates
+- [x] Automatic certificate generation
 
-## Uwagi
-Obecna wersja zawiera wszystkie główne funkcjonalności opisane w dokumentacji. Rozwijamy obecnie:
-* System zarządzania kursami
-* Dodatkowe języki programowania
-* Lepsze monitorowanie zasobów
+## Notes
+The current version includes all main features described in the documentation. Ongoing development includes:
+* Course management system
+* Additional programming languages
+* Improved resource monitoring
 
-## Struktura repozytorium
+## Repository Structure
 
 ```
 JupyterHub
@@ -168,50 +169,51 @@ JupyterHub
 
 ```
 
-# Dokumentacja
+
+# Documentation
 
 ## 1. JupyterHub
-Wersja: jupyterhub/jupyterhub:3.1.1
+Version: jupyterhub/jupyterhub:3.1.1
 
-*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
+*(Located in /app/jupyterhub/Dockerfile and configuration in /app/jupyterhub/jupyterhub_config.py)*
 
 [JupyterHub config file](https://github.com/jupyterhub/jupyterhub-deploy-docker)
 
 ## 2. Proxy
-Wersja: traefik:v2.9
+Version: traefik:v2.9
 
-Konfiguracja pliku TLS, musi znajdować się w osobnym pliku!, w tym przypadku jest to tls.yml
+TLS configuration file must be separate; in this case, it is tls.yml
 
-*(Znajduje się w /app/proxy/Dockerfile oraz konfiguracja w /app/proxy/traefik.yml)*
+*(Located in /app/proxy/Dockerfile and configuration in /app/proxy/traefik.yml)*
 
 [Traefik documentation](https://doc.traefik.io/traefik/)
 
-[Traefik config entry poionts](https://doc.traefik.io/traefik/routing/entrypoints/)
+[Traefik config entry points](https://doc.traefik.io/traefik/routing/entrypoints/)
 
 ## 3. Notebook
-Wersja: jupyter/scipy-notebook:hub-3.1.1
+Version: jupyter/scipy-notebook:hub-3.1.1
 
-*(Znajduje się w /app/jupyterlab/Dockerfile)*
+*(Located in /app/jupyterlab/Dockerfile)*
 
 [Building Docker image for Jupyter Notebook](https://jupyterhub-dockerspawner.readthedocs.io/en/latest/docker-image.html)
 
 [Datascience-notebook](https://hub.docker.com/r/jupyter/datascience-notebook/tags/)
 
 ## 4. JHubAuthenticators - CAS Authentication
-Wersja: jhubauthenticators==1.0.2
+Version: jhubauthenticators==1.0.2
 
-*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
+*(Located in /app/jupyterhub/Dockerfile and configuration in /app/jupyterhub/jupyterhub_config.py)*
 
 [CAS authenticator](https://github.com/cwaldbieser/jhub_cas_authenticator)
 
 ## 5. JupyterHub Idle Culler Service
-Wersja 1.2.1
+Version 1.2.1
 
-*(Znajduje się w /app/jupyterhub/Dockerfile oraz konfiguracja w /app/jupyterhub/jupyterhub_config.py)*
+*(Located in /app/jupyterhub/Dockerfile and configuration in /app/jupyterhub/jupyterhub_config.py)*
 
 [JupyterHub Idle Culler Service](https://github.com/jupyterhub/jupyterhub-idle-culler)
 
-## 6. Docker-compose with let's encrypt: TLS Challenge
-Konfiguracja automatycznego generowania certyfikatów TLS, oparta na wykorzystaniu Let's Encrypt.
+## 6. Docker-compose with Let's Encrypt: TLS Challenge
+Configuration for automatic TLS certificate generation using Let's Encrypt.
 
-[Docker-compose with let's encrypt: TLS Challenge](https://doc.traefik.io/traefik/user-guides/docker-compose/acme-tls/)
+[Docker-compose with Let's Encrypt: TLS Challenge](https://doc.traefik.io/traefik/user-guides/docker-compose/acme-tls/)
