@@ -1,43 +1,14 @@
 version: '3.3'
 services:
-  proxy:
+  proxy-test:
     build: ./app/proxy
-    container_name: proxy
+    container_name: proxy-test
     ports:
-      - "443:443"
       - "8443:8443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - ./app/proxy/traefik.yml:/etc/traefik/traefik.yml
       - ./letsencrypt:/letsencrypt
-
-  jupyterhub:
-    build: ./app/jupyterhub
-    container_name: jupyterhub
-    volumes:
-      - jupyterhub-public:/home/jovyan/public:rw
-      - jupyterhub-README:/home/jovyan/_README:rw
-      - "/var/run/docker.sock:/var/run/docker.sock:rw"
-      - "jupyterhub-data:/data"
-      - "./app/jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
-      
-    environment:
-      - ACTIVE_SERVER_LIMIT=${ACTIVE_SERVER_LIMIT}
-      - DOCKER_NOTEBOOK_DIR=/home/jovyan/work
-      - ACTIVITY_RESOLUTION=${ACTIVITY_RESOLUTION}
-      - MEM_LIMIT=${MEM_LIMIT}
-      - CPU_LIMIT=${CPU_LIMIT}
-      - DOCKER_NOTEBOOK_IMAGE=notebook_img
-      - DOCKER_NETWORK_NAME=${COMPOSE_PROJECT_NAME}_default
-      - HOST=${HOST}
-      - JUPYTERHUB_IDLE_CULLER_TIMEOUT=${IDLE_CULLER_TIMEOUT}
-      - DEBUG=${DEBUG}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jupyterhub.rule=Host(`${HOST}`)"
-      - "traefik.http.routers.jupyterhub.entrypoints=https"
-      - "traefik.http.routers.jupyterhub.tls.certresolver=tlsresolver"
-      - "traefik.http.services.jupyterhub.loadbalancer.server.port=8000"
 
   jupyterhub-test:
     build: ./app/jupyterhub
@@ -75,9 +46,6 @@ services:
     command: echo
 
 volumes:
-  jupyterhub-data:
   jupyterhub-test-data:
   jupyterhub-public:
   jupyterhub-README:
-
-

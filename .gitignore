@@ -4,3 +4,5 @@ appdata/teachers/*
 app/proxy/certs/*
 .vscode
 .DS_Store
+data/jupyterhub.sqlite
+letsencrypt/acme.json

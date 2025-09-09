@@ -3,6 +3,7 @@
 
 FROM jupyterhub/jupyterhub:3.1.1
 
+
 # Install packages
 RUN pip install \
     # Dockerspawner for JupyterHub
@@ -11,6 +12,10 @@ RUN pip install \
     jhub_cas_authenticator==1.0.2 \
     # JupyterHub Idle Culler
     jupyterhub-idle-culler==1.2.1
+
+# Dodaj te linie przed CMD/ENTRYPOINT
+# COPY custom_start.sh /usr/local/bin/custom_start.sh
+# RUN chmod +x /usr/local/bin/custom_start.sh
 
 # Copy configuration file
 COPY ./jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
