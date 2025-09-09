@@ -25,11 +25,58 @@ c.JupyterHub.hub_port = 9090
 c.JupyterHub.cookie_secret_file = "/data/jupyterhub_cookie_secret" # Persist hub data on volume mounted inside container
 c.JupyterHub.db_url = "sqlite:////data/jupyterhub.sqlite"
 
-notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR", "/home/jovyan")
-c.DockerSpawner.notebook_dir = notebook_dir
+def is_six_digits_username(username):
+    return username[:6].isdigit() and len(username) >= 6
 
-c.DockerSpawner.volumes = {"jupyterhub-user-{username}": notebook_dir}
+
+# ======================
+# KONFIGURACJA WOLUMENÓW Z WIZUALIZACJĄ
+# ======================
+
+def setup_user_environment(spawner):
+    """Ustawia zmienne środowiskowe, volumes i komendę post-start"""
+    username = spawner.user.name
+    
+    # Normalizuj nazwę użytkownika dla wolumenów Dockera
+    safe_username = username.replace('@', '-').replace('.', '-')
+    if safe_username.endswith('-stud-prz-edu-pl'):
+        safe_username = safe_username[:-len('-stud-prz-edu-pl')]
+    elif safe_username.endswith('-prz-edu-pl'):
+        safe_username = safe_username[:-len('-prz-edu-pl')]
+    
+    notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR", "/home/jovyan/work")
+    my_public_dir = "/home/jovyan/work/-my_public-"
+    public_dir = "/home/jovyan/public"
+    readme_dir = "/home/jovyan/-README-"
+
+    volumes = {
+        f"jupyterhub-user-{safe_username}-work": {"bind": notebook_dir, "mode": "rw"},
+        "jupyterhub-public": {"bind": public_dir, "mode": "ro"},
+        "readme_dir": {"bind": readme_dir, "mode": "ro"}
+    }
+
+    environment = {}
+
+    if not is_six_digits_username(username):
+        volumes[f"jupyterhub-user-{safe_username}-my_public"] = {"bind": my_public_dir, "mode": "rw"}
+        environment["JUPYTERHUB_MY_PUBLIC_VOLUME"] = "true"
+    else:
+        environment["JUPYTERHUB_MY_PUBLIC_VOLUME"] = "false"
+        spawner.post_start_cmd = f"""
+        /bin/bash -c '
+        if [ -d {my_public_dir} ]; then
+            rm -rf {my_public_dir}
+        fi
+        '
+        """
+
+    spawner.volumes = volumes
+    spawner.environment = environment
+
+c.Spawner.pre_spawn_hook = setup_user_environment
+
 c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
+
 
 debug = os.environ.get("DEBUG", "False")
 if debug == "True":
@@ -39,10 +86,10 @@ if debug == "True":
 else:
     c.Authenticator.admin_users = {"admin"} # this line needs to be modified in configuration
     c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
-    c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas-server/login'
-    c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas-server/logout'
+    c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas/login'
+    c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas/logout'
     c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
-    c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas-server/serviceValidate'
+    c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas/serviceValidate'
     #c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
 
 

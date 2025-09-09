@@ -1,85 +1,175 @@
 # JupyterHub - Docker
 
-## Pierwsze uruchomienie
+## Wprowadzenie
+Niniejszy projekt implementuje środowisko JupyterHub z wykorzystaniem kontenerów Docker, serwera Traefik jako reverse-proxy oraz różnych mechanizmów uwierzytelniania i zarządzania użytkownikami. System jest zdefiniowany w plikach `docker-compose.yml`, `Dockerfile`, `jupyterhub_config.py` oraz `jupyterhub_config_test.py`.
+
+## Konfiguracja i uruchomienie
+
 
 ### Konfiguracja wstępna
-Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska. W tym celu należy:
+Przed pierwszym uruchomieniem wymagane jest skonfigurowanie środowiska, głównie poprzez edycję pliku `.env`.
 
-- edytować plik `.env`. W szczególności zmienić wartość zmiennej środowiskowej HOST (`HOST=localhost` `->` `HOST=jupyterhub.xxx.edu.pl`)
- 
-- Edycja adresu email administratora dla którego jest generowany certyfikat w pliku `/app/proxy/traefik.yml` (`certificatesResolvers -> tlsresolver -> acme: -> email:`)
-
-- Ustalenie administratora odbywa się w pliku `/app/jupyterhub/jupyterhub_config.py` w zmiennej `c.Authenticator.admin_users`. W celu ustawienia osoby z organizacji jako administratora należy dodać jej adres email do tej zmiennej (np. `123456@xxx.edu.pl`).
+- **Adres hosta**: Zmień wartość zmiennej środowiskowej `HOST` w pliku `.env` na adres, pod którym JupyterHub będzie dostępny (np. `HOST=jupyterhub.prz.edu.pl`).
+  
+- **Adres e-mail**: Edytuj adres e-mail administratora w pliku `traefik.yml`. Jest on używany do generowania certyfikatu TLS przez Let's Encrypt.
+  
+- **Ustalenie administratora**: W pliku `jupyterhub_config.py` dodaj adres e-mail administratora do zmiennej `c.Authenticator.admin_users`.
 
 - ~~dodatkowo wymagane jest wgranie certyfikatów TLS do `/app/proxy/certs/` *(korzystając z nazewnictwa plików: cert-host-key.pem oraz cer-host.pem)*.~~
 
-  Traefik sam generuje certyfikaty TLS, więc nie jest już wymagane ich wgranie.
+**Uwaga**: Wgrywanie certyfikatów TLS do `/app/proxy/certs/` nie jest już wymagane, ponieważ Traefik automatycznie generuje certyfikaty za pomocą Let's Encrypt.
+
 
 
 ### Uruchomienie
+Aby uruchomić projekt, skorzystaj z odpowiednich plików docker-compose.yml w zależności od środowiska, którego potrzebujesz.
 
-> docker-compose build
+#### Środowisko produkcyjne
+Aby uruchomić serwer produkcyjny, użyj polecenia:
 
-> docker-compose run -d
+```bash
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+Usługi są dostępne pod adresem https://{HOST} (np. https://jupyterhub.prz.edu.pl).
 
-MBnote: nie udalo sie uruchomic `docker-compose run -d`. Zamiast
-tego lepiej sprobowac:
+#### Środowisko testowe
+Aby uruchomić serwer testowy (niezależnie od produkcyjnego), użyj polecenia:
 
-> docker-compose up -d
+```bash
+docker-compose -f docker-compose.test.yml up -d --build
+```
 
-tego lepiej sprobowac (roznica miedzy `docker-compose up` a `docker-compose run`).
+Wersja testowa dostępna jest na porcie 8443 pod adresem https://{HOST}:8443/test/.
 
-Usługi szukac pod `https`, np. [https://jupyterhub.xxx.edu.pl](https://jupyterhub.xxx.edu.pl).
 
-Dostęp do JupyterHuba: `https://{nazwa_hosta}` (domyślnie port 80 HTTP jest wyłączony, przez co wymaga użycia HTTPS)
+Domyślnie port 80 (HTTP) jest wyłączony, a ruch jest przekierowywany na port 443 (HTTPS).
 
-## Osobne katalogi dla użytkowników
-*W trakcie pracy*
 
-W celu rozdzielenia danych użytkowników na nauczycieli oraz studentów, system wykrywa przedrostek `@stud.xxx.edu.pl` oraz `@xxx.edu.pl`, a następnie dzieli użytkowników na dwie grupy. Odbywa się to w pliku `/app/jupyterhub/config.py`, w funkcji `MyDockerSpawner`.
+## Główne funkcjonalności
 
-# TODO
+### 1. Zarządzanie kontenerami użytkowników
+* **Dockerspawner**: Tworzenie pojedynczych instancji Jupyter Notebook dla każdego użytkownika.
+* **Limity zasobów**: Limity pamięci (`MEM_LIMIT`) i procesora (`CPU_LIMIT`) są konfigurowane dynamicznie.
+* **Zarządzanie wolumenami**:
+    * Wolumen prywatny dla każdego użytkownika.
+    * Wolumen publiczny dla współdzielonych zasobów.
 
-## Projekt
-- [x] Przygotowanie pliku docker-compose.yml
+### 2. Uwierzytelnianie
+* **CAS Authenticator**: Integracja z systemem uwierzytelniania CAS.
+* **Dummy Authenticator**: Tryb testowy dla rozwoju lokalnego.
+
+### 3. Idle Culler
+Automatyczne zamykanie nieaktywnych sesji po określonym czasie.
+
+### 4. Reverse Proxy (Traefik)
+* Automatyczne zarządzanie certyfikatami SSL.
+* Konfiguracja punktów końcowych.
+
+---
+
+## Dokładna specyfikacja dostępu do wolumenów
+
+### 1. Wolumen prywatny (`/home/jovyan/work`)
+* **Przeznaczenie**: 
+  * Przestrzeń robocza użytkownika
+  * Dane prywatne i konfiguracje
+  * Ścieżka na hoście: `/var/lib/docker/volumes/jupyterhub-user-<username>-work/_data`
+
+### Wolumen publiczny (`/home/jovyan/public`)
+* **Dostęp dla wszystkich użytkowników**:
+    * Tylko do odczytu (read-only).
+    * Brak możliwości zapisu.
+    * Ścieżka na hoście: `/var/lib/docker/volumes/jupyterhub-public/_data`.
+
+### Wolumen `my_public` (specjalny dla wykładowców)
+* **Mechanizm działania**:
+    * Automatyczne kopiowanie plików z `my_public` do publicznego folderu na hoście.
+    * Implementowane przez skrypt monitorujący zmiany za pomocą `inotifywait`.
+* **Dostęp**:
+    * Tylko wykładowcy (użytkownicy bez 6-cyfrowego ID) mają dostęp do wolumenu (odczyt-zapis).
+    * Studenci nie mają do niego dostępu.
+
+### Wolumen informacyjny (`/home/jovyan/-README-`)
+* **Dostęp dla wszystkich użytkowników**:
+    * Tylko do odczytu (read-only).
+    * Brak możliwości zapisu.
+    * Ścieżka na hoście: `/var/lib/docker/volumes/readme_dir/_data`.
+
+### Rzeczywiste uprawnienia:
+| Wolumen | Studenci (6-cyfrowe ID) | Wykładowcy (inne ID) |
+| :--- | :---: | :---: |
+| `work` | Odczyt-Zapis | Odczyt-Zapis |
+| `public` | Tylko do odczytu | Tylko do odczytu |
+| `my_public` | Brak dostępu | Odczyt-Zapis |
+| `-README-` | Tylko do odczytu | Tylko do odczytu |
+
+---
+
+## Obejście problemów z folderami publicznymi
+System wykorzystuje mechanizm kopiowania z `my_public` do publicznego folderu na hoście, ponieważ:
+1.  Docker Volume ma ograniczenia w zarządzaniu uprawnieniami.
+2.  Bezpośredni zapis do publicznego wolumenu powodował problemy z synchronizacją.
+3.  Rozwiązanie gwarantuje, że tylko zatwierdzone pliki wykładowców trafiają do przestrzeni publicznej.
+
+---
+
+# Status projektu
+
+### Projekt
+- [x] Przygotowanie pliku `docker-compose.yml`
 - [x] Uporządkowanie struktury projektu
-## JupyterHub
-- [x] Przygodowanie dla uwierzytelniania CAS
-- [x] Przygotowanie pliku juptyerhub_config.py
-- [x] Zmiana katalogu z danymi użytkowników
-- [ ] Dodanie obsługi kursów
-- [ ] Problem z uprawnieniami do katalogów użytkowników [Tu występuje taki sam błąd](https://github.com/jupyterhub/dockerspawner/issues/160)
-## Proxy
-- [x] Przygotowanie pliku traefik.yml
+- [x] Rozdzielenie konfiguracji na wersje deweloperską i produkcyjną
+- [x] Konfiguracja zmiennych środowiskowych
+
+### JupyterHub
+- [x] Rozwiązanie problemów z uprawnieniami
+- [x] Przygotowanie dla uwierzytelniania CAS
+- [ ] Implementacja systemu kursów
+
+### Notebook
+- [x] Naprawa braku uprawnień przy tworzeniu nowego notebooka
+- [x] Dodanie jądra Julii i R
+- [x] Dodanie obsługi C++
+- [x] Przygotowanie pliku z paczkami pythona
+- [ ] Dodanie jądra Maximy
+
+### Proxy
+- [x] Przygotowanie pliku `traefik.yml`
 - [x] Dodanie obsługi HTTPS
 - [x] Konfiguracja certyfikatów
 - [x] Automatyczne generowanie certyfikatów
-## Notebook
-- [x] Naprawa braku uprawnień przy tworzeniu nowego notebooka
-- [x] Dodanie jądra Julii i R
-- [ ] Dodanie obsługi C++
-- [ ] Przygotowanie pliku z paczkami pythona
 
+## Uwagi
+Obecna wersja zawiera wszystkie główne funkcjonalności opisane w dokumentacji. Rozwijamy obecnie:
+* System zarządzania kursami
+* Dodatkowe języki programowania
+* Lepsze monitorowanie zasobów
 
 ## Struktura repozytorium
+
 ```
 JupyterHub
+.
 ├── .env
 ├── README.md
-├── docker-compose.yml
+├── docker-compose.prod.yml
+├── docker-compose.test.yml
 ├── app
-│   ├── jupyterhub
-│   │   ├── Dockerfile
-|   |   └── jupyterhub_config.py
-│   |── jupyterlab
-│   |   └── Dockerfile
-|   |── proxy
-│   |   |── Dockerfile
-│   |   |── traefik.yml
+│   ├── jupyterhub
+│   │   ├── Dockerfile
+│   │   ├── jupyterhub_config.py
+│   │   └── jupyterhub_config_test.py
+│   ├── jupyterlab
+│	│	├── requirements.txt
+│   │   └── Dockerfile
+│   └── proxy
+│       ├── Dockerfile
+│       └── traefik.yml
 
 ```
 
 # Dokumentacja
+
 ## 1. JupyterHub
 Wersja: jupyterhub/jupyterhub:3.1.1
 

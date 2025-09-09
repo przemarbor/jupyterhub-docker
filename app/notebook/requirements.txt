@@ -1,0 +1,4 @@
+numpy==1.23.5
+pandas==2.0.0
+matplotlib==3.7.1
+folium==0.12.1
