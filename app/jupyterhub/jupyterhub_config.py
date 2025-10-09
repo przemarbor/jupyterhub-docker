@@ -79,17 +79,17 @@ c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
 
 
 debug = os.environ.get("DEBUG", "False")
-if debug == "True":
-    c.Authenticator.admin_users = {"admin"}
-    c.JupyterHub.authenticator_class = "dummy"
-    c.DockerSpawner.debug = True
-else:
-    c.Authenticator.admin_users = {"admin"} # this line needs to be modified in configuration
-    c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
-    c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas/login'
-    c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas/logout'
-    c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
-    c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas/serviceValidate'
+# if debug == "True":
+#     c.Authenticator.admin_users = {"admin"}
+#     c.JupyterHub.authenticator_class = "dummy"
+#     c.DockerSpawner.debug = True
+# else:
+c.Authenticator.admin_users = {"marbor@prz.edu.pl", "167865@stud.prz.edu.pl"} # this line needs to be modified in configuration
+c.JupyterHub.authenticator_class = 'jhub_cas_authenticator.cas_auth.CASAuthenticator'
+c.CASAuthenticator.cas_login_url = 'https://cas.prz.edu.pl/cas/login'
+c.CASAuthenticator.cas_logout_url = 'https://cas.prz.edu.pl/cas/logout'
+c.CASAuthenticator.cas_service_url = 'https://%s/hub/login' % os.environ['HOST']
+c.CASAuthenticator.cas_service_validate_url = 'https://cas.prz.edu.pl/cas/serviceValidate'
     #c.CASAuthenticator.cas_required_attribs = {('memberOf', 'jupyterhub_users')}
 
 
